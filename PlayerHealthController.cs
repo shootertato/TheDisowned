@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class PlayerHealthController : MonoBehaviour {
 	public static PlayerHealthController instance;
@@ -13,7 +14,11 @@ public class PlayerHealthController : MonoBehaviour {
 	}
 
 	void Start(){
-		currentHealth = maxHealth;
+		if(File.Exists(GameDataController.instance.saveFile)){
+			currentHealth = GameDataController.instance.gameData.health;
+		}else{
+			currentHealth = maxHealth;
+		}
 	}	
 
 	private void Update() {
