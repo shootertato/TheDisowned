@@ -23,5 +23,7 @@ public class LevelManager : MonoBehaviour {
         UIcontroller.instance.UpdateHealthDisplay();
         AudioManager.instance.PlaySoundEffect(2);
         AudioManager.instance.StopSoundEffect(0);
+        CharacterController.instance.speed=4;
+		CharacterController.instance.jumpForce=7;
     }
 }

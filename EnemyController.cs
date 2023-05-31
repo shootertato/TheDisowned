@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyController : MonoBehaviour {
+    public static EnemyController instance;
+    [SerializeField] private float life;
     public float moveSpeed;
     public Transform lPoint, rPoint;
     private bool movingRight;
@@ -11,7 +13,13 @@ public class EnemyController : MonoBehaviour {
     public float moveTime, waitTime;
     private float moveCount, waitCount;
     private Animator animator;
-    
+    public float chance;
+    public GameObject collectible;
+
+    private void Awake(){
+		instance = this;
+	}
+        
     void Start() {
         theRB = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
@@ -56,4 +64,16 @@ public class EnemyController : MonoBehaviour {
             animator.SetBool("isMoving", false);
         }  
     }
+
+    public void TakeDamage(float dmg){
+        life -= dmg;
+        if (life <= 0){
+            float drop = Random.Range(0, 100f);
+            if(drop <= chance){
+                Instantiate(collectible, theRB.transform.position, theRB.transform.rotation);
+            }
+            Destroy(gameObject);
+        }
+    }
+
 }

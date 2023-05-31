@@ -30,8 +30,18 @@ public class PlayerHealthController : MonoBehaviour {
 	public void DealDamage(){
 		currentHealth--;
 		if(currentHealth <= 0){
+			CharacterController.instance.speed=0;
+			CharacterController.instance.jumpForce=0;
 			animator.SetBool("isDead", true);
 			LevelManager.instance.RespawnPlayer();
+		}
+		UIcontroller.instance.UpdateHealthDisplay();
+	}
+
+	public void Heal(){
+		currentHealth++;
+		if(currentHealth > maxHealth){
+			currentHealth = maxHealth;
 		}
 		UIcontroller.instance.UpdateHealthDisplay();
 	}
