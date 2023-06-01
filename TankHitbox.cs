@@ -11,7 +11,6 @@ public class TankHitbox : MonoBehaviour {
         }
         
         if(other.tag==("Bullet")){
-            boss.Hit();
             gameObject.SetActive(false);
         }
     }

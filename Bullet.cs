@@ -15,6 +15,11 @@ public class Bullet : MonoBehaviour {
             other.GetComponent<EnemyController>().TakeDamage(dmg);
             Destroy(gameObject);
         }
+        
+        if(other.tag==("Tank")){
+            other.GetComponent<BossTankController>().TakeDamage(dmg);
+            Destroy(gameObject);
+        }
 
         if(other.tag==("Player")){
             other.GetComponent<PlayerHealthController>().DealDamage();   

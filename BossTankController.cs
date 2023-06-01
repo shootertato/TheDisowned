@@ -4,89 +4,75 @@ using UnityEngine;
 
 public class BossTankController : MonoBehaviour {
     public static BossTankController instance;
-    public enum bossStates{shooting, hurt, moving};
-    public bossStates currentStates;
-    public Transform boss;
-    public Animator anim;
-    [Header("Movement")]
+    [SerializeField] private float life;
     public float moveSpeed;
     public Transform lPoint, rPoint;
-    private bool moveRight;
-    [Header("Shooting")]
-    public GameObject bullet;
-    public Transform shootController;
-    public float timeToShoot;
-    private float shootCounter;
-    [Header("Hurt")]
-    public float hurtTime;
-    private float hurtCounter;
-    public GameObject hitbox;
-    [SerializeField] private float life;
+    private bool movingRight;
+    private Rigidbody2D theRB;
+    public SpriteRenderer theSR;
+    public float moveTime, waitTime;
+    private float moveCount, waitCount;
+    private Animator animator;
+    public float chance;
+    public GameObject collectible;
 
+    private void Awake(){
+		instance = this;
+	}
+        
+    void Start() {
+        theRB = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
 
-    private void Start() {
-        currentStates = bossStates.shooting;
-       
+        lPoint.parent = null;
+        rPoint.parent = null;
+
+        movingRight=true;
+        moveCount = moveTime;
     }
 
-    private void Update() {
-        switch(currentStates){
-            case bossStates.shooting:
-                shootCounter -= Time.deltaTime;
-                if(shootCounter <= 0){
-                    shootCounter = timeToShoot;
-                    var newBullet = Instantiate(bullet, shootController.position, shootController.rotation);
-                    newBullet.transform.localScale = boss.localScale;
-                    AudioManager.instance.PlaySoundEffect(4);
-                }
-            break;
+    void Update() {
+        if(moveCount > 0){
+            moveCount -= Time.deltaTime;
+            if(movingRight){
+                theRB.velocity = new Vector2(moveSpeed, theRB.velocity.y);
+                theSR.flipX = true;
 
-            case bossStates.hurt:
-            if (hurtCounter > 0) {
-                hurtCounter -= Time.deltaTime;
-                Hit();
-                if(hurtCounter <= 0){
-                    currentStates = bossStates.moving;
+                if(transform.position.x > rPoint.position.x){
+                    movingRight = false;
+                }
+            }else{
+                theRB.velocity = new Vector2(-moveSpeed, theRB.velocity.y);
+                theSR.flipX = false;
+
+                if(transform.position.x < lPoint.position.x){
+                    movingRight = true;
                 }
             }
-            break;
 
-            case bossStates.moving:
-                if(moveRight){
-                    boss.position += new Vector3(moveSpeed * Time.deltaTime, 0f, 0f);
-                    if(boss.position.x > rPoint.position.x){
-                        boss.localScale = new Vector3(1f, 1f, 1f);
-                        moveRight = false;
-                        EndMove();
-                    }else{
-                        boss.position -= new Vector3(moveSpeed * Time.deltaTime, 0f, 0f);
-                        boss.localScale = new Vector3(-1f, 1f, 1f);
-                        if(boss.position.x < rPoint.position.x){
-                            moveRight = true;
-                            EndMove();
-                        }
-                    }
-                }
-            break;
+            if(moveCount <= 0){
+                waitCount = Random.Range(waitTime* .75f, waitTime*1.25f);
+            }
+            animator.SetBool("isMoving", true);
+        }else if(waitCount > 0){
+            waitCount -= Time.deltaTime;
+            theRB.velocity = new Vector2(0f, theRB.velocity.y);
 
-        }
+            if(waitCount <= 0){
+                moveCount = Random.Range(moveTime* .75f, waitTime*1.25f);
+            }
+            animator.SetBool("isMoving", false);
+        }  
     }
 
-    public void Hit(){
-        currentStates = bossStates.hurt;
-        hurtCounter = hurtTime;
-        anim.SetTrigger("Hit");
-        life--;
+    public void TakeDamage(float dmg){
+        life -= dmg;
         if (life <= 0){
+            float drop = Random.Range(0, 100f);
+            if(drop <= chance){
+                Instantiate(collectible, theRB.transform.position, theRB.transform.rotation);
+            }
             Destroy(gameObject);
         }
     }
-
-    private void EndMove(){
-        currentStates = bossStates.shooting;
-        shootCounter = timeToShoot;
-        anim.SetBool("StopMoving", true);
-        hitbox.SetActive(true); 
-    }
-
 }
